@@ -6,8 +6,16 @@ var app = express();
 // tell node to start a new server and to use the express app as the bolilerplate.
 // so any thing that the express app listen to, should the server listen to
 var http = require("http").Server(app);
+// this is the format that socket io expected
+var io = require("socket.io")(http);
 
 app.use(express.static(__dirname + "/public"));
+
+// on: listen for event
+// on(eventName, callback when event happen)
+io.on("connection", function () {
+    console.log("User connected via socket.io!");
+});
 
 // start the server
 http.listen(PORT, function () {
