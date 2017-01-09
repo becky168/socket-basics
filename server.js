@@ -13,6 +13,8 @@ app.use(express.static(__dirname + "/public"));
 
 // on: listen for event
 // on(eventName, callback when event happen)
+// 在有新的client連入的時候，就會執行到connection的callback function，
+// 會傳入一個socket，可以利用這個socket跟這個client溝通
 io.on("connection", function () {
     console.log("User connected via socket.io!");
 });
