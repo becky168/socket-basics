@@ -9,6 +9,8 @@ socket.on("message", function (message) {
     // pass the data in (parameter:message => present data)
     console.log("New message");
     console.log(message.text);
+
+    $(".messages").append("<p>" + message.text + "</p>");
 });
 
 // Handles submitting of new message

@@ -23,11 +23,14 @@ io.on("connection", function (socket) {
         console.log("Message received:" + message.text);
 
         // sent the message to all of people except the person who sent the message
-        socket.broadcast.emit("message", message);
+        // socket.broadcast.emit("message", message);
+        // sent the message to all of people include the person who sent the message
+        io.emit("message", message);
     });
 
     // emit an event: emit(event name, data to sent)
     // (sent the message to all of people include the person who sent the message)
+    // sending to sender-client only
     socket.emit("message", {
         text: "Welcome to the chat application!"
     });
