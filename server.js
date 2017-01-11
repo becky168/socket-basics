@@ -34,6 +34,7 @@ io.on("connection", function (socket) {
     // (sent the message to all of people include the person who sent the message)
     // sending to sender-client only
     socket.emit("message", {
+        name: "System",
         text: "Welcome to the chat application!",
         timestamp: moment().valueOf()
     });
