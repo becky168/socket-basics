@@ -13,12 +13,27 @@ var io = require("socket.io")(http);
 
 app.use(express.static(__dirname + "/public"));
 
+var clientInfo = {};
+
 // on: listen for event
 // on(eventName, callback when event happen)
 // 在有新的client連入的時候，就會執行到connection的callback function，
 // 會傳入一個socket，可以利用這個socket跟這個client溝通 (individual connection)
 io.on("connection", function (socket) {
     console.log("User connected via socket.io!");
+
+    socket.on("joinRoom", function (req) {
+        clientInfo[socket.id] = req;
+        // socket.io可以使用分组方法,socket.join(),以及与之对应的socket.leave()。
+        socket.join(req.room);
+        // only people in this room can see the message
+        // sending to all clients in 'req.room' room(channel) except sender
+        socket.broadcast.to(req.room).emit("message", {
+            name: "System",
+            message: `${req.name} has joined!`,
+            timestamp: moment().valueOf()
+        });
+    });
 
     socket.on("message", function (message) {
         console.log("Message received:" + message.text);
@@ -27,7 +42,8 @@ io.on("connection", function (socket) {
         // sent the message to all of people except the person who sent the message
         // socket.broadcast.emit("message", message);
         // sent the message to all of people include the person who sent the message
-        io.emit("message", message);
+        // io.emit("message", message);
+        io.to(clientInfo[socket.id].room).emit("message", message);
     });
 
     // emit an event: emit(event name, data to sent)
