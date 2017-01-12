@@ -14,6 +14,38 @@ var io = require("socket.io")(http);
 app.use(express.static(__dirname + "/public"));
 
 var clientInfo = {};
+// var clientInfo = {
+//     "socket.id": {
+//         name: "Andrew",
+//         room: "LOTR Fans"
+//     }
+// };
+
+// send current users to provided socket
+function sendCurrentUsers (socket) {
+    var info = clientInfo[socket.id];
+    var users = [];
+
+    if (typeof info === "undefined") {
+        return;
+    }
+
+    // return all the attributes of the object
+    Object.keys(clientInfo)
+        .forEach(function (socketId) {
+            var userInfo = clientInfo[socketId];
+
+            if (info.room === userInfo.room) {
+                users.push(userInfo.name);
+            }
+        });
+
+    socket.emit("message", {
+        name: "System",
+        text: `Current users: ${users.join(", ")}`,
+        timestamp: moment.valueOf()
+    });
+}
 
 // on: listen for event
 // on(eventName, callback when event happen)
@@ -37,7 +69,6 @@ io.on("connection", function (socket) {
 
     socket.on("joinRoom", function (req) {
         clientInfo[socket.id] = req;
-        console.log(req);
         // socket.io可以使用分组方法,socket.join(),以及与之对应的socket.leave()。
         socket.join(req.room);
         // only people in this room can see the message
@@ -52,12 +83,16 @@ io.on("connection", function (socket) {
     socket.on("message", function (message) {
         console.log("Message received:" + message.text);
 
-        message.timestamp = moment().valueOf(); // return the javascript timestamp, milliseconds version of the regular unit timestamp 
-        // sent the message to all of people except the person who sent the message
-        // socket.broadcast.emit("message", message);
-        // sent the message to all of people include the person who sent the message
-        // io.emit("message", message);
-        io.to(clientInfo[socket.id].room).emit("message", message);
+        if (message.text === "@currentUsers") {
+            sendCurrentUsers(socket);
+        } else {
+            message.timestamp = moment().valueOf(); // return the javascript timestamp, milliseconds version of the regular unit timestamp 
+            // sent the message to all of people except the person who sent the message
+            // socket.broadcast.emit("message", message);
+            // sent the message to all of people include the person who sent the message
+            // io.emit("message", message);
+            io.to(clientInfo[socket.id].room).emit("message", message);
+        }
     });
 
     // emit an event: emit(event name, data to sent)
